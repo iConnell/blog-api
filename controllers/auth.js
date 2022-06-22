@@ -1,11 +1,11 @@
-const { UnauthorizedError } = require("../errors");
+const { UnauthorizedError, BadRequestError } = require("../errors");
 const User = require("../models/User");
 
 const register = async (req, res) => {
   const { password, password2 } = req.body;
 
   if (password !== password2) {
-    throw new Error("The two passwords must match");
+    throw new BadRequestError("The two passwords must match");
   }
 
   delete req.body.password2;
@@ -21,14 +21,14 @@ const register = async (req, res) => {
     email: user.email,
     token,
   };
-  res.status(200).json(response);
+  res.status(201).json(response);
 };
 
 const login = async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
-    throw new Error("You must enter username and password");
+    throw new BadRequestError("You must enter username and password");
   }
 
   const user = await User.findOne({ username });

@@ -10,9 +10,11 @@ const createPost = async (req, res) => {
 };
 
 const getPosts = async (req, res) => {
-  const posts = await Post.find({ author: req.user.id });
+  // const posts = await Post.find({ author: req.user.id });
 
-  res.status(200).json({ posts, count: posts.length });
+  // res.status(200).json({ posts, count: posts.length });
+
+  res.status(200).json({ msg: "succ" });
 };
 
 const getPost = async (req, res) => {

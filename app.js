@@ -20,16 +20,20 @@ app.use("/api/posts", authMiddleware, blogRoutes);
 app.use(errorHandler);
 
 const port = process.env.PORT || 8000;
+// app.listen(8000, () => {
+//   console.log("App is listening");
+// });
 
-const start = async () => {
-  try {
-    await mongoose.connect(process.env.MONGO_URI);
-    app.listen(port, () => {
-      console.log("Speak for the app is listening");
-    });
-  } catch (err) {
-    console.log(err);
-  }
-};
+// const start = async () => {
+//   try {
+//     await mongoose.connect(process.env.MONGO_URI);
+//     app.listen(port, () => {
+//       console.log("Speak for the app is listening");
+//     });
+//   } catch (err) {
+//     console.log(err);
+//   }
+// };
+// start();
 
-start();
+module.exports = app;
