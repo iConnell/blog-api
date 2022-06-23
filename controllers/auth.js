@@ -1,5 +1,6 @@
 const { UnauthorizedError, BadRequestError } = require("../errors");
 const User = require("../models/User");
+const generateToken = require("../helpers/utils");
 
 const register = async (req, res) => {
   const { password, password2 } = req.body;
@@ -12,7 +13,7 @@ const register = async (req, res) => {
 
   const user = await User.create({ ...req.body });
 
-  const token = await user.createToken();
+  const token = await generateToken({ id: user._id, username: user.username });
 
   const response = {
     id: user._id,
@@ -40,7 +41,11 @@ const login = async (req, res) => {
   if (!isMatch) {
     throw new UnauthorizedError("Username or password incorrect");
   }
-  const token = await user.createToken();
+
+  const token = await generateToken({
+    id: user._id,
+    username: user.username,
+  });
   res.status(200).json({ token });
 };
 
