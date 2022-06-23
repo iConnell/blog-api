@@ -1,6 +1,18 @@
 const { UnauthorizedError, BadRequestError } = require("../errors");
 const User = require("../models/User");
 const generateToken = require("../helpers/utils");
+const Token = require("../models/Token");
+const nodemailer = require("nodemailer");
+const jwt = require("jsonwebtoken");
+
+const tranporter = nodemailer.createTransport({
+  host: "smtp.elasticemail.com",
+  port: 2525,
+  auth: {
+    user: process.env.ELASTIC_USER,
+    pass: process.env.ELASTIC_API_KEY,
+  },
+});
 
 const register = async (req, res) => {
   const { password, password2 } = req.body;
@@ -13,16 +25,35 @@ const register = async (req, res) => {
 
   const user = await User.create({ ...req.body });
 
-  const token = await generateToken({ id: user._id, username: user.username });
+  // const token = await generateToken({ id: user._id, username: user.username });
+  const verificationToken = await user.createVerificationToken();
 
-  const response = {
-    id: user._id,
-    name: user.firstName + " " + user.lastName,
-    username: user.username,
-    email: user.email,
-    token,
-  };
-  res.status(201).json(response);
+  const verificationUrl = `${process.env.PORT}/api/auth/verify/${verificationToken}`;
+
+  await tranporter.sendMail({
+    from: process.env.FROM_EMAIL,
+    to: req.body.email,
+    subject: "Verify Your Blog account",
+    html: `Click <a href='${verificationUrl}'> Here </a> to confirm your email address`,
+  });
+
+  res.status(201).json({ msg: `Verification email sent to ${req.body.email}` });
+};
+
+const verifyEmail = async (req, res) => {
+  const { token } = req.params;
+
+  const payload = jwt.verify(token, process.env.JWT_SECRET);
+
+  await User.findOneAndUpdate(
+    {
+      _id: payload.id,
+      username: payload.username,
+    },
+    { isActive: true }
+  );
+
+  res.status(200).json({ msg: "Account verified" });
 };
 
 const login = async (req, res) => {
@@ -38,8 +69,16 @@ const login = async (req, res) => {
   }
 
   const isMatch = await user.checkPassword(password);
+
+  console.log(`from controller ${isMatch}, ${password}`);
   if (!isMatch) {
-    throw new UnauthorizedError("Username or password incorrect");
+    throw new UnauthorizedError(" or password incorrect");
+  }
+
+  if (!user.isActive) {
+    return res
+      .status(401)
+      .json({ msg: "Verify your account before you proceed" });
   }
 
   const token = await generateToken({
@@ -49,7 +88,22 @@ const login = async (req, res) => {
   res.status(200).json({ token });
 };
 
+// For testing purposes
+const deleteAllUsers = async (req, res) => {
+  const del = await User.deleteMany({});
+
+  res.status(200).json(del);
+};
+
+const deleteAllTokens = async (req, res) => {
+  const del = await Token.deleteMany({});
+
+  res.status(200).json(del);
+};
 module.exports = {
   login,
   register,
+  verifyEmail,
+  deleteAllUsers,
+  deleteAllTokens,
 };

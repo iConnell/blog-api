@@ -38,6 +38,11 @@ const UserSchema = new mongoose.Schema({
     required: true,
     minlength: 8,
   },
+  isActive: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
 });
 
 UserSchema.pre("save", async function () {
@@ -45,16 +50,17 @@ UserSchema.pre("save", async function () {
   this.password = await bcrypt.hash(this.password, salt);
 });
 
-// UserSchema.methods.createToken = async function () {
-//   return jwt.sign(
-//     { username: this.username, id: this.id },
-//     process.env.JWT_SECRET,
-//     { expiresIn: process.env.JWT_TTL }
-//   );
-// };
+UserSchema.methods.createVerificationToken = async function () {
+  return jwt.sign(
+    { username: this.username, id: this.id },
+    process.env.JWT_SECRET,
+    { expiresIn: "1d" }
+  );
+};
 
 UserSchema.methods.checkPassword = async function (password) {
   const isMatch = await bcrypt.compare(password, this.password);
+  console.log(isMatch);
   return isMatch;
 };
 
