@@ -1,5 +1,7 @@
 const jwt = require("jsonwebtoken");
 const { UnauthorizedError } = require("../errors");
+const Token = require("../models/Token");
+const User = require("../models/User");
 
 const authMiddleware = async (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -8,11 +10,14 @@ const authMiddleware = async (req, res, next) => {
     throw new UnauthorizedError("Invalide Token");
   }
 
-  const token = authHeader.split(" ")[1];
+  const inputToken = authHeader.split(" ")[1];
 
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = { id: payload.id, username: payload.username };
+    const dbToken = await Token.findOne({ key: inputToken });
+
+    const user = User.findOne({ _id: dbToken.user });
+
+    req.user = { id: user._id, username: user.username };
     next();
   } catch (error) {
     throw new UnauthorizedError("Invalid Token");

@@ -28,7 +28,7 @@ const register = async (req, res) => {
   // const token = await generateToken({ id: user._id, username: user.username });
   const verificationToken = await user.createVerificationToken();
 
-  const verificationUrl = `${process.env.PORT}/api/auth/verify/${verificationToken}`;
+  const verificationUrl = `${process.env.HOST}/api/auth/verify/${verificationToken}`;
 
   await tranporter.sendMail({
     from: process.env.FROM_EMAIL,
