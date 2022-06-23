@@ -15,6 +15,9 @@ A blog API built with Node js
     - Update Posts
     - Delete Posts
 
+- ## Testing
+    - All endpoints are tested
+
 ## Major Dependencies
 - Mongoose - Interfacing with mongodb 
 - Express js - The core of the API
