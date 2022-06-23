@@ -10,11 +10,9 @@ const createPost = async (req, res) => {
 };
 
 const getPosts = async (req, res) => {
-  // const posts = await Post.find({ author: req.user.id });
+  const posts = await Post.find({ author: req.user.id });
 
-  // res.status(200).json({ posts, count: posts.length });
-
-  res.status(200).json({ msg: "succ" });
+  res.status(200).json({ posts, count: posts.length });
 };
 
 const getPost = async (req, res) => {
@@ -44,7 +42,7 @@ const deletePost = async (req, res) => {
     throw new NotFoundError(`Post with id ${req.params.id} not found`);
   }
 
-  res.status(200).json({ data: "Post deleted" });
+  res.status(204).json({ data: "Post deleted" });
 };
 
 module.exports = {

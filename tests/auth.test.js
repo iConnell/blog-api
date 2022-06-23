@@ -1,50 +1,32 @@
 const supertest = require("supertest");
 const { connectDb, closeDb } = require("./db");
+const { userRegData, incorrectRegData, userLoginData } = require("./mockData");
 const app = require("../app");
 
 const client = supertest.agent(app);
-
-const userCredentials = {
-  firstName: "McConnell",
-  lastName: "Ikechukwu",
-  username: "testUser",
-  email: "testEmail@gmail.com",
-  password: "testpassword",
-  password2: "testpassword",
-};
-
-const incorrectCredentials = {
-  lastName: "Ikechukwu",
-  email: "testEmail@gmail.com",
-  password: "testpassword",
-  password2: "testpassword",
-};
 
 beforeAll(async () => await connectDb());
 afterAll(async () => await closeDb());
 
 describe("User Registration Test Suite", () => {
   it("Test create New User, with everything as it should be", async () => {
-    const res = await client.post("/api/auth/register").send(userCredentials);
-
+    const res = await client.post("/api/auth/register").send(userRegData);
     expect(res.statusCode).toEqual(201);
     expect(res.body).toBeTruthy();
     expect(res.body.id).toBeTruthy();
     expect(res.body.token).toBeTruthy();
-    expect(res.body.username).toBe(userCredentials.username.toLowerCase());
+    expect(res.body.username).toBe(userRegData.username.toLowerCase());
   });
 
   it("Test create New user, with a few required fields missing", async () => {
-    const res = await client
-      .post("/api/auth/register")
-      .send(incorrectCredentials);
+    const res = await client.post("/api/auth/register").send(incorrectRegData);
     expect(res.statusCode).toEqual(500);
     expect(res.body.id).toBeFalsy();
     expect(res.body.token).toBeFalsy();
   });
 
   it("Test create New user, with already existing unique user details", async () => {
-    const res = await client.post("/api/auth/register").send(userCredentials);
+    const res = await client.post("/api/auth/register").send(userRegData);
     expect(res.statusCode).toEqual(500);
   });
 });
@@ -54,7 +36,6 @@ describe("User Login Test Suites", () => {
     const res = await client
       .post("/api/auth/login")
       .send({ username: "testuser", password: "testpassword" });
-    console.log(res.body);
     expect(res.statusCode).toEqual(200);
     expect(res.body.token).toBeTruthy();
   });
