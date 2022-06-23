@@ -88,6 +88,12 @@ const login = async (req, res) => {
   res.status(200).json({ token });
 };
 
+const logout = async (req, res) => {
+  await Token.findOneAndDelete({ user: req.user.id });
+
+  res.status(204);
+};
+
 // For testing purposes
 const deleteAllUsers = async (req, res) => {
   const del = await User.deleteMany({});
@@ -104,6 +110,7 @@ module.exports = {
   login,
   register,
   verifyEmail,
+  logout,
   deleteAllUsers,
   deleteAllTokens,
 };
